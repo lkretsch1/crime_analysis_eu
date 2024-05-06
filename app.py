@@ -133,7 +133,7 @@ with tab1:
                     unsafe_allow_html=True)
     
 
-    col1, col2 = st.columns([0.6,0.4])
+    col1, col2 = st.columns(2)
 
     with col1: 
         #Variable Selection
