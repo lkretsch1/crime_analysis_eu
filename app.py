@@ -337,7 +337,7 @@ with tab2:
         crime_max = crimes_nuts["Average"].max()
         if level_x == "NUTS": 
             if country_x !="EU": 
-                c1, c2, c3, c4 = st.columns([0.3, 0.4, 0.3])
+                cc2, c3, c4 = st.columns([0.3, 0.4, 0.3])
                 with c2: 
                     #st.markdown(f'<style = {css}></style>',unsafe_allow_html=True)
                     st.metric(""" Country""", country_h)
