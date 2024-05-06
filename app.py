@@ -360,11 +360,11 @@ with tab2:
                     plt.xticks(rotation=45, fontsize=8)
                     st.pyplot(fig_5)
             else: 
-                c1, c2, c3 = st.columns([0.1, 0.45, 0.45])
-                with c2:
+                c1, c2 = st.columns([0.6, 0.4])
+                with c1:
                     st.metric("Country with the Highest Average Number of reported Crimes", country_h)
                     st.image(flags.get(country_h), width=100)
-                with c3: 
+                with c2: 
                     st.metric("Average Number of reported Crimes", crime_max)
         else: 
             if country_x == "EU": 
@@ -379,16 +379,17 @@ with tab2:
                 df_highest = highest_c.groupby(["Region"], as_index=False)["Crimes"].agg(["sum", "count"])
                 df_highest["Average"] = df_highest["sum"]/df_highest["count"]
 
-                c1, c2 = st.columns([0.4, 0.6])
-                c3, c4= st.columns([ 0.6, 0.4])
+                c1, c2,ci = st.columns([0.3,0.2, 0.5])
+                c3, c4= st.columns([ 0.5, 0.5])
                 with c1: 
                     st.metric("Country", country_h)
+                with ci: 
                     st.image(flags.get(country_h),width=100)
                 with c2: 
                     st.metric("""Region with highest \n average number of crimes""", region_h)
-                with c3: 
-                    st.metric("Average Number of reported Crimes", crime_max)
                 with c4: 
+                    st.metric("Average Number of reported Crimes", crime_max)
+                with c3: 
                     mi = iccs["Year"].min()
                     ma = iccs["Year"].max()
                     st.metric("Years of avialable data", f"{mi} - {ma}")
