@@ -379,7 +379,8 @@ with tab2:
                 df_highest = highest_c.groupby(["Region"], as_index=False)["Crimes"].agg(["sum", "count"])
                 df_highest["Average"] = df_highest["sum"]/df_highest["count"]
 
-                c1, c2, c3, c4= st.columns([ 0.2, 0.3, 0.3, 0.2])
+                c1, c2 = st.columns([0.4, 0.6])
+                c3, c4= st.columns([ 0.6, 0.4])
                 with c1: 
                     st.metric("Country", country_h)
                     st.image(flags.get(country_h),width=100)
