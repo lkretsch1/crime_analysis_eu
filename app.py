@@ -10,22 +10,11 @@ st.set_page_config(layout="wide")
 
 #Define Function
 @st.cache_data
-def load_crimes(table, region, country): 
-    crimes = pd.read_table(table,sep='\t')
+def load_crimes(file, region, country): 
+    crimes = pd.read_csv(file)
     #Clean Up Dataframe 
-    crimes[["freq", "unit", "iccs", "geo"]] = crimes["freq,unit,iccs,geo\TIME_PERIOD"].str.split(",", expand=True)
-    crimes = crimes.drop(["freq,unit,iccs,geo\TIME_PERIOD", "freq"], axis=1)
-    crimes = crimes.replace(": ", None)
-    #Remove Spaces from the column names 
-    col = []
-    for c in crimes.columns: 
-        col.append(c.replace(" ", ""))
-    crimes.columns = col
-    #Unpivot Dataframe 
-    crimes = crimes.melt(id_vars=["geo", "iccs", "unit"], value_vars=["2008", "2009", "2010", "2011", "2012", 
-                        "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021"], 
-                        var_name="Year", value_name="Crimes")
-
+    crimes = crimes.drop(["DATAFLOW", "LAST UPDATE", "freq", "OBS_FLAG"], axis=1)
+    crimes = crimes.rename(columns={"TIME_PERIOD" : "Year", "OBS_VALUE" : "Crimes"})
 
     #Load Nuts Region Description
     nuts = pd.read_excel(region)
@@ -88,7 +77,7 @@ def load_shape(file):
 #START STREAMLIT APP
 
 #Import Dataframe 
-crimes = load_crimes("data/estat_crim_gen_reg.tsv", "data/NUTS3.xlsx","data/Countries.xlsx")
+crimes = load_crimes("data/estat_crim_gen_reg_en.csv", "data/NUTS3.xlsx","data/Countries.xlsx")
 crimes_nr, crimes_p = split_unit(crimes)
 nuts_0, nuts_1, nuts_2, nuts_3 = nuts_regions(crimes_nr)
 nuts0_p, nuts1_p, nuts2_p, nuts3_p = nuts_regions(crimes_p)
@@ -96,25 +85,45 @@ nuts0_p, nuts1_p, nuts2_p, nuts3_p = nuts_regions(crimes_p)
 #Load Shape FIle 
 world = load_shape("data/Nuts3_Shape/NUTS_RG_20M_2021_3035.shp")
 
-#Build Streamlit App 
-#st.title("Crime Analysis in EU-Region")  
-st.markdown("""<h1 style='margin-top: -70px; text-align: center; color: black'>Crime Analysis in 
-            EU-Region</h1>""", unsafe_allow_html=True)   
+#Create Flag Dictionary
+flags = {"Albania": "flags/Albania.png", "Austria": "flags/Austria.png", "Belgium": "flags/Belgium.png",
+         "Bulgaria" : "flags/Bulgaria.png", "Croatia": "flags/Croatia.png", "Cyprus": "flags/Cyprus.png",
+         "Czechia": "flags/Czechia.png", "Denmark":  "flags/Denmark.png","Estonia": "flags/Estonia.png", 
+         "EU": "flags/EU.png","Finland" : "flags/Finland.png","Germany":  "flags/Germany.png", "France" : "flags/France.png", 
+         "Greece": "flags/Greece.png","Hungary":  "flags/Hungary.png", "Iceland" : "flags/Iceland.png", 
+         "Ireland" : "flags/Ireland.png", "Italy" : "flags/Italy.png", "Latvia":  "flags/Latvia.png", 
+         "Liechtenstein": "flags/Liechtenstein.png", "Lithuania" : "flags/Lithuania.png",
+         "Luxembourg": "flags/Luxembourg.png", "Malta": "flags/Malta.png", "Montenegro": "flags/Montenegro.png", 
+         "Netherlands" : "flags/Netherlands.png", "Norway": "flags/Norway.png", "Poland": "flags/Poland.png",
+          "Portugal": "flags/Portugal.png", "Romania": "flags/Romania.png", "Serbia": "flags/Serbia.png",
+         "Slovakia":  "flags/Slovakia.png", "Slovenia" : "flags/Slovenia.png","Spain":  "flags/Spain.png", 
+         "Sweden": "flags/Sweden.png", "Switzerland": "flags/Switzerland.png", "Türkiye": "flags/Türkiye.png"}
 
-st.markdown(""""<h6 style='margin-top: -30px; text-align: center; color: black;'>**Analysis of 
-            police-recorded offenses by NUTS-3 regions based on data provided by European 
-            Commission - Eurostat.**</h6>""",
-            unsafe_allow_html=True)
+#Build Streamlit App 
+#Header/ Title with Description
+c1, c2,c3 = st.columns([0.1, 0.8, 0.1])
+with c1: 
+    st.image("flags/EU.png", use_column_width=True)
+with c2: 
+    st.markdown("""<h1 style='margin-top: -10px; text-align: center; color: black'>Analyzing Crimes in 
+                EU-Regions</h1>""", unsafe_allow_html=True)   
+
+    st.markdown("""<h4 style='margin-top: +10px; text-align: center; color: black;'>Analysis of 
+                police-recorded offenses by NUTS-3 regions based on data provided by European 
+                Commission - Eurostat.</h4>""",
+                unsafe_allow_html=True)
+with c3: 
+    st.image("flags/EU.png",  use_column_width=True)
 
 #Create Tabs 
-tab1, tab2, tab3, tab4 = st.tabs(["Definition", "Analysis 1", "Analysis 2", "Analysis 3"])
+tab1, tab2, tab3 = st.tabs(["Overview", "Analyzing NUTS-Regions", "Analyzing ICCS Crimes"])
 
 #FIRST TAB
 with tab1:  
-    st.markdown("""<h3 style='margin-top: -10px;text-align: center; color: black'>Definitions</h3>""", 
+    st.markdown("""<h2 style='margin-top: -10px;text-align: center; color: black'>Definitions</h2>""", 
             unsafe_allow_html=True)  
     #NUTS Definition
-    st.markdown("""<h5 style='color: grey'>NUTS Definition</h5>""", unsafe_allow_html=True)
+    st.markdown("""<h4 style='color: grey'>NUTS Definition</h4>""", unsafe_allow_html=True)
     st.markdown("""<div style='margin-top: -10px;border: 1px solid black; padding: 10px;text-align: center;
                 '> The European Union has established a common classification of territorial units for 
                 statistics, known as ‘NUTS’, in order to facilitate the collection, development and 
@@ -122,16 +131,19 @@ with tab1:
                 also used for socioeconomic analyses of the regions and the framing of interventions 
                 in the context of EU cohesion policy.    -   Definition European Parlament</div>""",
                     unsafe_allow_html=True)
-    st.divider()
+    
 
     col1, col2 = st.columns([0.6,0.4])
 
     with col1: 
         #Variable Selection
-        st.markdown("""<h5 style='text-align: left;margin-top: +50px; color: grey'>Select or Change Variables for a Detailed 
-        Analysis</h5>""", unsafe_allow_html=True)
+        st.markdown("""<h6 style='text-align: left;margin-top: +50px; color: grey'>Select or Change Variables for a Detailed 
+        Analysis</h6>""", unsafe_allow_html=True)
+        #Merge World Dataframe with Nuts_0 Dataframe to find missing values 
+        check = world.merge(nuts_0, left_on='FID', right_on='geo', how='right')
+        check = check.dropna()
         eu = pd.Series("EU")
-        reg = pd.Series(nuts_0["Region"].unique()).sort_values()
+        reg = pd.Series(check["Region"].unique()).sort_values()
         col = pd.concat([eu, reg]).reset_index(drop=True)
         country = st.selectbox("Choose a Country",col)
         level = st.selectbox("Choose a NUTS-Level", ["NUTS", "NUTS 1", "NUTS 2", "NUTS 3"])
@@ -155,7 +167,8 @@ with tab1:
         #Merge Geopandas File for Map
         world_nuts = world.merge(nuts, left_on='FID', right_on='geo', how='right')
         #NUTS-Level Classification
-        st.caption("NUTS - Level Classification")
+        st.markdown("""<h5 style='text-align: left;margin-top: +50px; color: grey'>NUTS - Level Classification
+                    </h5>""", unsafe_allow_html=True)
         st.write("""The NUTS classification is hierarchical in that it subdivides each Member State into
                     three levels: NUTS 1, NUTS 2 and NUTS 3. The second and third levels are subdivisions 
                     of the first and second levels.The current NUTS 2021 classification is valid from 
@@ -164,17 +177,17 @@ with tab1:
         #Show Table with Classification Requirement 
         nuts_classification = pd.DataFrame()
         nuts_classification["NUTS Level"] = ["NUTS 1", "NUTS 2", "NUTS 3"]
-        nuts_classification["Minimum"] = ["3 Million", "800 000", "150 000"]
-        nuts_classification["Maximum"] = ["7 Million", "3 Million", "800 000"]
+        nuts_classification["Minimum Population"] = ["3 Million", "800 000", "150 000"]
+        nuts_classification["Maximum Population"] = ["7 Million", "3 Million", "800 000"]
         st.table(nuts_classification)
         st.write("""If there is no administrative unit of a sufficient size in a Member State, the level
                     is established by aggregating a sufficient number of smaller contiguous administrative
                     units. These aggregated units are known as ‘non-administrative units’.""")
-        st.write("""For more information:
+        st.write("""For more information visit:
             https://www.europarl.europa.eu/factsheets/en/sheet/99/common-classification-of-territorial-units-for-statistics-nuts-""")
     with col2: 
         #Create Map showing NUTS Regions at selected Level
-        st.markdown(f"""<h5 style='margin-top: -20px;margin-bottom: -30px;text-align: center; color: black'>{level} - 
+        st.markdown(f"""<h5 style='margin-top: +50px;margin-bottom: -30px;text-align: center; color: black'>{level} - 
                 Regions in {country} </h5>""", unsafe_allow_html=True) 
         # Plotting
         fig_0, ax_0 = plt.subplots(figsize=(15, 10))
@@ -191,8 +204,8 @@ with tab1:
     st.divider()
 
     #ICCS DEFINITION
-    st.markdown("""<h5 style='color: grey'>ICCS Definition</h5>""", unsafe_allow_html=True)
-    st.markdown("""<div style='margin-top: -10px;margin-bottom: +20px; border: 1px solid black; padding: 10px;text-align: center;
+    st.markdown("""<h4 style='color: grey'>ICCS Definition</h4>""", unsafe_allow_html=True)
+    st.markdown("""<div style='margin-top: -10px;border: 1px solid black; padding: 10px;text-align: center;
                 '> The International Classification of Crime for Statistical Purposes (ICCS) provides a
                 comprehensive framework for producing statistics on crime and criminal justice. The ICCS
                 is the first common framework to group all kinds of criminal offences into categories 
@@ -201,7 +214,8 @@ with tab1:
     c1, c2 = st.columns(2)
     with c1: 
         #ICCS Categories
-        st.caption("ICCS Categories")
+        st.markdown("""<h5 style='text-align: left;margin-top: +50px; color: grey'>ICCS Code Categories
+                    </h5>""", unsafe_allow_html=True)
         st.markdown("""<p style='text-align: center; color: black;'>The numerical
                      coding of the categories is in accordance with their level in the classification: 
                      Level 1 categories are the broadest categories and have a two-digit code (e.g. 01);
@@ -227,14 +241,18 @@ with tab1:
                     property with the intent to permanently withhold it from a person or organization 
                     without consent and without the use of force, threat of force or violence, coercion
                     or deception""", "Theft of a motorized land vehicle" ]
-        st.caption("ICCS Code Definition - Eurostat Dataset")
+        st.markdown("""<h5 style='text-align: left;margin-top: +50px; color: grey'>ICCS Code Definitions
+                    </h5>""", unsafe_allow_html=True)
         st.table(iccs_def)
-    st.write("For more information: https://www.unodc.org/unodc/en/data-and-analysis/statistics/iccs.html")
+    st.write("For more information visit: https://www.unodc.org/unodc/en/data-and-analysis/statistics/iccs.html")
     st.divider()
 
 #ANALYSIS - CRIME 
 with tab2: 
+    
     #Missing Data Information
+    st.markdown("""<h2 style='margin-top: -10px;text-align: center; color: black'>Analyzing Crimes by NUTS-Regions</h2>""", 
+            unsafe_allow_html=True)
     with st.expander("IMPORTANT NOTICE"):
         st.markdown("""<h5 style='color: grey;text-align: center;'>Missing Data</h5>""", unsafe_allow_html=True)
         st.markdown("""<div style='margin-top: -10px;margin-bottom: +20px; border: 1px solid black; 
@@ -265,15 +283,12 @@ with tab2:
             st.markdown("""<h7 style='color: grey;text-align: center;'>Missing Data by ICCS Code</h7>""", unsafe_allow_html=True)
             st.dataframe(missing_iccs_styled, use_container_width = True)
             
-    #Analysis
-    st.markdown("""<h3 style='margin-top: -10px;text-align: center; color: black'>Crime Analysis by NUTS-Region</h3>""", 
-            unsafe_allow_html=True)  
+    #Analysis  
     col1, col2 = st.columns([0.4,0.6])
     with col2: 
         #Variable Selection
-        st.markdown("""<h5 style='text-align: left;margin-top: +50px; color: grey'>Select or Change Variables for a Detailed 
-        Analysis</h5>""", unsafe_allow_html=True)
-        st.markdown("""<h5 style='color: grey'>NUTS</h5>""", unsafe_allow_html=True)
+        st.markdown("""<h6 style='text-align: left;margin-top: +50px; color: grey'>Select or Change Variables for a Detailed 
+        Analysis</h6>""", unsafe_allow_html=True)
         country_x = st.selectbox("Choose a Country: ",col)
         level_x = st.selectbox("Choose a NUTS-Level: ", ["NUTS", "NUTS 1", "NUTS 2", "NUTS 3"])
         if level_x == "NUTS": 
@@ -307,27 +322,50 @@ with tab2:
         crimes_nuts= crimes_nuts.groupby(["Region", "geo"], 
                                             as_index=False)["Average"].sum().round(2)
         #Filter Dataframe: Number of Crimes by Category 
-        iccs = nuts_t2.groupby(["Year", "iccs"], as_index=False)["Crimes"].agg(["sum"])
+        iccs = nuts_t2.groupby(["Year"], as_index=False)["Crimes"].agg(["sum"])
         #Pivot Dataframe for Visualization Purposes
-        iccs_p = iccs.pivot(index="Year", columns=["iccs"], values="sum").reset_index()
+        #iccs_p = iccs.pivot(index="Year", values="sum").reset_index()
         #Filter Dataframe: Number of Regions that reported Crimes 
         crimes_reported = nuts_t2.groupby(["Year"], as_index=False)["Crimes"].count()
 
         world_crimes = world.merge(crimes_nuts, left_on='FID', right_on='geo', how='right')
 
         #Map Summary 
+        st.markdown("""<h5 style='color: grey; margin-top: 30px'>Summary Statistics</h5>""", unsafe_allow_html=True)
         highest_crimes = crimes_nuts[crimes_nuts["Average"] == crimes_nuts["Average"].max()]
         country_h = highest_crimes["Region"].iloc[0]
         crime_max = crimes_nuts["Average"].max()
         if level_x == "NUTS": 
             if country_x !="EU": 
-                st.markdown(f"""<p style='text-align: center; color: black;'>{country_h} has an 
-                average number of {crime_max} reported crimes.</p>""",
-                unsafe_allow_html=True)
+                c1, c2, c3, c4 = st.columns([0.1, 0.3, 0.3, 0.3])
+                with c2: 
+                    #st.markdown(f'<style = {css}></style>',unsafe_allow_html=True)
+                    st.metric(""" Country""", country_h)
+                    st.image(flags.get(country_h),width=100)
+                    
+                with c3: 
+                    st.metric("Average Number of police recored offenses", crime_max)
+                with c4: 
+                    mi = iccs["Year"].min()
+                    ma = iccs["Year"].max()
+                    st.metric("Years of available data", f"{mi} - {ma}")
+                c1, c2, c3 = st.columns([0.2,0.6,0.2])
+                with c2: 
+                    st.markdown(f"""<h5 style='margin-top: +80px;margin-bottom: -30px;text-align: center; color: black'>Total Number of 
+                                reported crimes in {level_x} - Region in {country_h}</h5>""", 
+                                unsafe_allow_html=True)
+                    fig_5 = plt.figure(figsize=(10,5))
+                    sns.barplot(data = iccs, x="Year",y="sum", palette="Blues_d")
+                    plt.ylabel("# of crimes")
+                    plt.xticks(rotation=45, fontsize=8)
+                    st.pyplot(fig_5)
             else: 
-                st.markdown(f"""<p style='text-align: center; color: black;'>{country_h} has the highest 
-                average number of crimes with {crime_max} reported crimes.</p>""",
-                unsafe_allow_html=True)
+                c1, c2, c3 = st.columns([0.1, 0.45, 0.45])
+                with c2:
+                    st.metric("Country with the Highest Average Number of reported Crimes", country_h)
+                    st.image(flags.get(country_h), width=100)
+                with c3: 
+                    st.metric("Average Number of reported Crimes", crime_max)
         else: 
             if country_x == "EU": 
                 st.write("Please Choose a country to see the graph")
@@ -340,12 +378,23 @@ with tab2:
                 highest_c = nuts_t2[nuts_t2["Country Name"]==country_h]
                 df_highest = highest_c.groupby(["Region"], as_index=False)["Crimes"].agg(["sum", "count"])
                 df_highest["Average"] = df_highest["sum"]/df_highest["count"]
-                st.markdown(f"""<p style='text-align: center; color: black;'>{region_h} in {country_h} has the highest 
-                average number of crimes with {crime_max} reported crimes.</p>""",
-                unsafe_allow_html=True)
+
+                c1, c2, c3, c4= st.columns([ 0.2, 0.3, 0.3, 0.2])
+                with c1: 
+                    st.metric("Country", country_h)
+                    st.image(flags.get(country_h),width=100)
+                with c2: 
+                    st.metric("""Region with highest \n average number of crimes""", region_h)
+                with c3: 
+                    st.metric("Average Number of reported Crimes", crime_max)
+                with c4: 
+                    mi = iccs["Year"].min()
+                    ma = iccs["Year"].max()
+                    st.metric("Years of avialable data", f"{mi} - {ma}")
                 c1, c2, c3 = st.columns([0.25, 0.5, 0.25])
                 with c2: 
                     fig_4 = plt.figure()
+                    df_highest = df_highest.sort_values(by="Average", ascending=False)
                     sns.barplot(data = df_highest, x="Region",y="Average", palette="Blues_d")
                     plt.title(f"Average Number of reported crimes in {level_x} - Region in {country_h}")
                     plt.ylabel("# of crimes")
@@ -369,6 +418,8 @@ with tab2:
         
 #ICCS Code ANALYSIS
 with tab3: 
+    st.markdown("""<h2 style='margin-top: -10px;text-align: center; color: black'>Analyzing Crimes by ICCS Code</h2>""", 
+            unsafe_allow_html=True)
     #Missing Data Information
     with st.expander("IMPORTANT NOTICE"):
         st.markdown("""<h5 style='color: grey;text-align: center;'>Missing Data</h5>""", unsafe_allow_html=True)
@@ -398,9 +449,7 @@ with tab3:
             st.dataframe(missing_iccs_styled, use_container_width = True)
 
     st.divider()
-    #Analysis
-    st.markdown("""<h3 style='text-align: center;margin-bottom: +40px; color: black'>ICCS Code Overview - Crime Code</h3>""", 
-            unsafe_allow_html=True)  
+    #Analysis  
     
     #Plot Total Number of Crimes reported by ICCS Code
     co1, co2, co3 = st.columns([0.3, 0.1, 0.6])
@@ -408,6 +457,7 @@ with tab3:
         st.markdown("""<h5 style='margin-top: -20px;margin-bottom: -30px;text-align: center; color: black'>Total Number of Crimes 
         reported by ICCS Code</h5>""", unsafe_allow_html=True)
         iccs_t3 = crimes_nr.groupby(["iccs"], as_index=False)["Crimes"].sum()
+        iccs_t3 = iccs_t3.sort_values(by="Crimes", ascending=False)
         fig_x = plt.figure()
         sns.barplot(data=iccs_t3, x="iccs", y="Crimes", palette="Blues_d")
         plt.xticks(rotation=45)
@@ -436,11 +486,11 @@ with tab3:
 
     with col1: 
         #Variable Selection
-        st.markdown("""<h5 style='text-align: left;margin-top: +50px; color: grey'>Select or Change Variables for a Detailed 
-        Analysis</h5>""", 
+        st.markdown("""<h6 style='text-align: left;margin-top: +50px; color: grey'>Select or Change Variables for a Detailed 
+        Analysis</h6>""", 
             unsafe_allow_html=True)
-        level_y = st.selectbox("Choose a NUTS - Level ", ["NUTS", "NUTS 1", "NUTS 2", "NUTS 3"])
         country_y = st.selectbox("Choose a Country  ",col)
+        level_y = st.selectbox("Choose a NUTS - Level ", ["NUTS", "NUTS 1", "NUTS 2", "NUTS 3"])
         iccs = pd.Series(nuts_0["iccs"].unique()).sort_values()
         crime = st.multiselect("Select one or multiple ICCS - Crime Codes: ", iccs)
         #Choose Dataframe based on unit measure and Nuts Level
@@ -501,6 +551,59 @@ with tab3:
     #with c2: 
         
     st.divider()
+
+
+
+st.markdown(
+    """
+    <style>
+        [data-testid=stImage]{
+            text-align: center;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            width: 100%;
+        }
+    </style>
+    """, unsafe_allow_html=True
+)
+
+st.markdown(
+    """
+    <style>
+        [data-testid=stMetric]{
+            text-align: center;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            width: 100%;
+        }
+    </style>
+    """, unsafe_allow_html=True
+)
+
+st.markdown("""
+    <style>
+    [data-testid="stMetricValue"] {
+        font-size: 30px;
+    }
+    </style>
+    """, unsafe_allow_html=True) 
+
+st.markdown("""
+    <style>
+    [data-testid="stMetricLabel"] {
+        font-size: 50px;
+        text-align: center;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        width: 100%;
+        overflow-wrap: break-word;
+    }
+    </style>
+    """, unsafe_allow_html=True) 
+
 
     
 
