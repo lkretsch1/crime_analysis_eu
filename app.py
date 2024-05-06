@@ -133,7 +133,7 @@ with tab1:
                     unsafe_allow_html=True)
     
 
-    col1, col2 = st.columns(2)
+    col1, col2 = st.columns([0.6,0.4])
 
     with col1: 
         #Variable Selection
@@ -211,7 +211,7 @@ with tab1:
                 is the first common framework to group all kinds of criminal offences into categories 
                 that are useful for producing crime statistics all over the world.</div>""",
                 unsafe_allow_html=True)
-    c1, c2 = st.columns([0.4, 0.6])
+    c1, c2 = st.columns([0.5, 0.5])
     with c1: 
         #ICCS Categories
         st.markdown("""<h5 style='text-align: left;margin-top: +50px; color: grey'>ICCS Code Categories
