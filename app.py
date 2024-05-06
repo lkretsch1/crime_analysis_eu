@@ -187,7 +187,7 @@ with tab1:
             https://www.europarl.europa.eu/factsheets/en/sheet/99/common-classification-of-territorial-units-for-statistics-nuts-""")
     with col2: 
         #Create Map showing NUTS Regions at selected Level
-        st.markdown(f"""<h5 style='margin-top: +50px;margin-bottom: -30px;text-align: center; color: black'>{level} - 
+        st.markdown(f"""<h5 style='margin-top: +80px;margin-bottom: -30px;text-align: center; color: black'>{level} - 
                 Regions in {country} </h5>""", unsafe_allow_html=True) 
         # Plotting
         fig_0, ax_0 = plt.subplots(figsize=(15, 10))
@@ -211,7 +211,7 @@ with tab1:
                 is the first common framework to group all kinds of criminal offences into categories 
                 that are useful for producing crime statistics all over the world.</div>""",
                 unsafe_allow_html=True)
-    c1, c2 = st.columns(2)
+    c1, c2 = st.columns([0.4, 0.6])
     with c1: 
         #ICCS Categories
         st.markdown("""<h5 style='text-align: left;margin-top: +50px; color: grey'>ICCS Code Categories
@@ -275,7 +275,7 @@ with tab2:
         missing_iccs = missing_iccs.astype(int)
         missing_iccs_styled = missing_iccs.style.background_gradient()
 
-        c1, c2, c3 = st.columns((0.2,0.6,0.2))
+        c1, c2, c3 = st.columns((0.1,0.8,0.1))
         with c2: 
             #Print Dataframes
             st.markdown("""<h7 style='color: grey;text-align: center;'>Missing Data by Country</h7>""", unsafe_allow_html=True)
@@ -441,7 +441,7 @@ with tab3:
         missing_iccs = missing_iccs.pivot(index="iccs", columns=["Year"], values = "Country Code")
         missing_iccs = missing_iccs.astype(int)
         missing_iccs_styled = missing_iccs.style.background_gradient()
-        c1, c2, c3 = st.columns((0.2,0.6,0.2))
+        c1, c2, c3 = st.columns((0.1,0.8,0.1))
         with c2: 
             st.markdown("""<h7 style='color: grey;text-align: center;'>Missing Data by Country</h7>""", unsafe_allow_html=True)
             st.dataframe(missing_styled, use_container_width=True)
@@ -454,7 +454,7 @@ with tab3:
     #Plot Total Number of Crimes reported by ICCS Code
     co1, co2, co3 = st.columns([0.3, 0.1, 0.6])
     with co1: 
-        st.markdown("""<h5 style='margin-top: -20px;margin-bottom: -30px;text-align: center; color: black'>Total Number of Crimes 
+        st.markdown("""<h5 style='margin-top: +50px;margin-bottom: -30px;text-align: center; color: black'>Total Number of Crimes 
         reported by ICCS Code</h5>""", unsafe_allow_html=True)
         iccs_t3 = crimes_nr.groupby(["iccs"], as_index=False)["Crimes"].sum()
         iccs_t3 = iccs_t3.sort_values(by="Crimes", ascending=False)
@@ -554,6 +554,7 @@ with tab3:
 
 
 
+#Formatting st.Image and st.Metric
 st.markdown(
     """
     <style>
