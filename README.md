@@ -15,8 +15,13 @@ The streamlit app can be opened by running the app.py file as well.
 
 ## Data/operation abstraction design 🌐
 
-The data has been retrieved from:  https://data.europa.eu/data/datasets/wzxbhifltwvee4h8tcdza?locale=en#
+The data with police recorded offenses has been retrieved from:  https://data.europa.eu/data/datasets/wzxbhifltwvee4h8tcdza?locale=en#
 Different file formats are available for download. Using the csv file provides a cleaned and correctly formatted dataframe for the analysis. 
+
+In order to transform geo codes in the crime dataset into region names, the data dictionary has been copied in an excel file by hand since no fitting dataset has been found.  
+In addition to that, a shape file containing the locations of NUTS-Regions has been downloaded from the following page: 
+https://ec.europa.eu/eurostat/web/gisco/geodata/reference-data/administrative-units-statistical-units/nuts
+
 
 ## Future Work 🚀
 
