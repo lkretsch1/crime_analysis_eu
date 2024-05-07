@@ -11,9 +11,15 @@ As a civilian, this information can be useful for traveling or residential purpo
 Link to Streamlit App 
 https://crimeanalysis-eu.streamlit.app/
 
+The streamlit app is consists of three parts. First, NUTS-Regions as well as ICCS Codes are being defined and explained in order to understand the data that's being analyzed. A map visualizes the different NUTS-Regions and a filter can be used to specify on a single country. 
+The second part of the streamlit app, focuses on analyzing the number of crimes by NUTS-Regions. A colored map allows an instant judgement of crime rates and filters can be used for a detailed analysis. Summary statistics as well as additional charts will add more detail to the analysis. 
+The third and final part analyzes crime types by ICCS codes. Total, as well as yearly crime numbers are being displaed in the analysis, along with a map and filters. 
+
+It is important to notice that the dataset is not complete. Not every region as reported every crime every year, thus a comparison can be difficult. This problem has been handled by computing average crime rates that takes the sum of crimes reported for that region and divides it by the number of times the region reported crimes. 
+
 The streamlit app can be opened by running the app.py file as well. 
 
-## Data/operation abstraction design 🌐
+## Data Sources 🌐
 
 The data with police recorded offenses has been retrieved from:  https://data.europa.eu/data/datasets/wzxbhifltwvee4h8tcdza?locale=en#
 Different file formats are available for download. Using the csv file provides a cleaned and correctly formatted dataframe for the analysis. 
